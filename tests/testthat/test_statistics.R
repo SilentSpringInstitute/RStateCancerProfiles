@@ -20,8 +20,7 @@ test_that("downloading state cancer profiles statistics works", {
                                     "cancer",
                                     "sex",
                                     "age",
-                                    "race",
-                                    "suppressed"
+                                    "race"
     ))
 
     expect_equal(nrow(dat), 3141)

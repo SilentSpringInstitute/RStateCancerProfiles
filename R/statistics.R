@@ -27,7 +27,7 @@ statistic_form_values <- function(by, state, cancer, race, sex, age) {
 }
 
 incidence_table_url <- function(by, state, cancer, race, sex, age) {
-  vals <- statistic_statistic_form_values(by, state, cancer, race, sex, age)
+  vals <- statistic_form_values(by, state, cancer, race, sex, age)
 
   args <- list(
     stateFIPS = vals$state,
@@ -58,14 +58,25 @@ mortality_table_url <- function(by, state, cancer, race, sex, age) {
 }
 
 download_csv <- function(url, dest = tempfile(), delete_rows = c(), skip = 0, ...) {
-  download.file(url, destfile = dest)
+  download.file(url, destfile = dest, mode="wb")
+
+  # readlines complains when downloading mortality data that the last line isn't complete
+  # so we manually add a final endline character to be safe
+  out <- file(dest, 'a')
+  write("\n", file = out, append = TRUE)
+  close(out)
+
   raw <- readLines(dest)
+
+  # Pilcrows are used to indicate when data is not available.
+  # replace pilcrows with "p"s for easier text handling.
+  raw <- stringr::str_replace_all(raw, "\U00B6", "p")
 
   if(length(delete_rows) > 0) {
     raw <- raw[-delete_rows]
   }
 
-  # Cut off the first 8 lines
+  # Cut off the first lines
   raw <- raw[skip:length(raw)]
 
   # Find the first blank line, then cut off everything after
@@ -121,11 +132,17 @@ download_csv <- function(url, dest = tempfile(), delete_rows = c(), skip = 0, ..
 #'
 #' @export
 cancer_statistics <- function(statistic = "incidence", by = "county", state = NULL, cancer = "all", race = "all", sex = "all", age = "all") {
+  statistic <- tolower(statistic)
+  by        <- tolower(by)
+  cancer    <- tolower(cancer)
+  race      <- tolower(race)
+  sex       <- tolower(sex)
+  age       <- tolower(age)
+  if(!is.null(state)) { state <- tolower(state) }
 
   if(statistic == "incidence") {
     url <- incidence_table_url(by, state, cancer, race, sex, age)
-    skip = 9
-    value_column = "incidence_rate"
+    skip = 10
     delete_rows = c()
     col_names <- c(
       "county",
@@ -139,6 +156,8 @@ cancer_statistics <- function(statistic = "incidence", by = "county", state = NU
       "recent_trend_95_confint_lower",
       "recent_trend_95_confint_upper"
     )
+
+    value_columns = col_names[c(3:6, 8:10)]
   }
   else {
     url <- mortality_table_url(by, state, cancer, race, sex, age)
@@ -158,6 +177,8 @@ cancer_statistics <- function(statistic = "incidence", by = "county", state = NU
       "recent_trend_95_confint_lower",
       "recent_trend_95_confint_upper"
     )
+
+    value_columns = col_names[4:11]
   }
 
   dat <- download_csv(url,
@@ -166,11 +187,18 @@ cancer_statistics <- function(statistic = "incidence", by = "county", state = NU
                       col_names = col_names,
                       col_types = strrep("c", length(col_names)))
 
-  dat$suppressed <- dat[[value_column]] == "*"
+  dat$statistic = statistic
+  dat$cancer = cancer
+  dat$sex = sex
+  dat$age = age
+  dat$race = race
 
-  dat[, value_column] <- ifelse(dat[, value_column] %in% c("*", "¶ "), NA, dat[, value_column])
-  dat[, value_column] <- stringr::str_replace(dat[[value_column]], "#", "")
-  dat[, value_column] <- as.numeric(dat[[value_column]])
+  for(value_column in value_columns) {
+    dat[[value_column]] <- stringr::str_replace_all(dat[[value_column]], "3 or fewer", "")
+    dat[[value_column]] <- stringr::str_replace_all(dat[[value_column]], "[p#* ]", "")
 
+    dat[[value_column]][dat[[value_column]] == ""] <- NA
+    dat[[value_column]] <- as.numeric(dat[[value_column]])
+  }
   return(dat)
 }
