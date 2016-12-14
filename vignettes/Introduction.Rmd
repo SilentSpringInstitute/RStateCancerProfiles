@@ -1,0 +1,17 @@
+---
+title: "Introduction to RStateCancerProfiles"
+author: "Herb Susmann"
+date: "December 14, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(RStateCancerProfiles)
+```
+
+## Incidence Data
+
+```{r incidence, message=FALSE}
+incidence <- cancer_statistics(statistic = "incidence")
+```

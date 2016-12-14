@@ -57,6 +57,7 @@ mortality_table_url <- function(by, state, cancer, race, sex, age) {
   return(url)
 }
 
+#' @importFrom utils download.file
 download_csv <- function(url, dest = tempfile(), delete_rows = c(), skip = 0, ...) {
   download.file(url, destfile = dest, mode="wb")
 
@@ -89,6 +90,8 @@ download_csv <- function(url, dest = tempfile(), delete_rows = c(), skip = 0, ..
   return(dat)
 }
 
+#' Download cancer incidence or mortality data.
+#'
 #' @param statistic "incidence" or "mortality"
 #' @param by "county" or "state"
 #' @param state restrict data download to one state; specify using state abbreviation (e.g. "MA"). Leave as NULL to retrieve data for all states.
@@ -125,7 +128,7 @@ download_csv <- function(url, dest = tempfile(), delete_rows = c(), skip = 0, ..
 #' }
 #'
 #' @examples
-#' \dontrun {
+#' \dontrun{
 #' # Download county level bladder cancer incidence data
 #' dat <- cancer_statistics(statistic = "incidence", by = "county", cancer = "bladder")
 #' }
@@ -139,6 +142,8 @@ cancer_statistics <- function(statistic = "incidence", by = "county", state = NU
   sex       <- tolower(sex)
   age       <- tolower(age)
   if(!is.null(state)) { state <- tolower(state) }
+
+  if(cancer == "breast (female)") { sex = "females" }
 
   if(statistic == "incidence") {
     url <- incidence_table_url(by, state, cancer, race, sex, age)
@@ -178,7 +183,7 @@ cancer_statistics <- function(statistic = "incidence", by = "county", state = NU
       "recent_trend_95_confint_upper"
     )
 
-    value_columns = col_names[4:11]
+    value_columns = col_names[c(4:7, 9:11)]
   }
 
   dat <- download_csv(url,
@@ -195,10 +200,13 @@ cancer_statistics <- function(statistic = "incidence", by = "county", state = NU
 
   for(value_column in value_columns) {
     dat[[value_column]] <- stringr::str_replace_all(dat[[value_column]], "3 or fewer", "")
-    dat[[value_column]] <- stringr::str_replace_all(dat[[value_column]], "[p#* ]", "")
+    dat[[value_column]] <- stringr::str_replace_all(dat[[value_column]], "[p#* ,]", "")
 
     dat[[value_column]][dat[[value_column]] == ""] <- NA
     dat[[value_column]] <- as.numeric(dat[[value_column]])
   }
+
+  dat$fips <- as.numeric(dat$fips)
+
   return(dat)
 }

@@ -1,0 +1,125 @@
+---
+title: "Making Cancer Maps with RStateCancerProfiles"
+author: "Herb Susmann"
+date: "December 14, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Mapping cancer incidence by county
+
+```{r libraries, message=FALSE}
+
+library(RStateCancerProfiles)
+library(tidyverse)
+library(ggmap)
+library(maps)
+```
+
+```{r download, message = FALSE}
+
+incidence <- cancer_statistics(statistic = "incidence")
+
+```
+
+```{r compute_quantiles}
+incidence <- incidence %>%
+  mutate(quantile = ntile(incidence_rate, 5))
+```
+
+```{r map, message = FALSE}
+
+fips <- county.fips %>%
+  mutate(polyname = as.character(polyname))
+
+
+incidence_with_geo <- map_data("county") %>%
+  
+  # Combine the region and subregion into one column so that we
+  # can join with the county FIPS codes
+  mutate(polyname = paste(region, subregion, sep=",")) %>%
+  
+  inner_join(fips, by = "polyname") %>%
+  
+  # Join in the incidence data, matching by FIPS
+  inner_join(incidence, by="fips")
+
+ggplot(incidence_with_geo, aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = as.factor(quantile))) +
+  scale_fill_manual(values = c("#2C7BB6", "#ABD9E9", "#FFFFBF", "#FDAE61", "#D7191C")) +
+  coord_map(projection = "albers", lat0 = 29.5, lat1 = 45.5) +
+  theme_nothing()
+
+```
+
+## Small multiples: county incidence maps for different cancer types
+
+```{r, message=FALSE}
+
+cancers <- c(
+  "bladder",
+  "brain & ONS",
+  "breast (female)",
+  "breast (female in situ)",
+  "cervix",
+  "colon & rectum",
+  "esophagus",
+  "kidney & renal pelvis",
+  "leukemia",
+  "liver & bile duct",
+  "lung & bronchus",
+  "non-hodgkin lymphoma",
+  "melanoma of the skin",
+  "oral cavity & pharynx",
+  "ovary",
+  "pancreas",
+  "prostate",
+  "stomach",
+  "thyroid",
+  "uterus"
+)
+
+incidence_list <- purrr::map(cancers, function(x) cancer_statistics(statistic = "incidence", cancer = x))
+
+incidence <- incidence_list %>%
+  bind_rows %>%
+  group_by(cancer) %>%
+  mutate(quantile = ntile(incidence_rate, 5)) %>%
+  ungroup()
+
+```
+
+```{r}
+
+incidence_with_geo <- map_data("county") %>%
+  mutate(polyname = paste(region, subregion, sep=",")) %>%
+  inner_join(fips, by = "polyname") %>%
+  inner_join(incidence, by="fips")
+
+
+ggplot(incidence_with_geo, aes(x = long, y = lat, group = group)) +
+  # County polygons
+  geom_polygon(aes(fill = as.factor(quantile))) +
+  
+  # Set color scheme for the counties
+  scale_fill_manual(values = c("#2C7BB6", "#ABD9E9", "#FFFFBF", "#FDAE61", "#D7191C")) +
+  
+  # Use a better map projection
+  coord_map(projection = "albers", lat0 = 29.5, lat1 = 45.5) +
+  
+  # Create separate maps for different cancer types
+  facet_wrap(~cancer, ncol = 5) +
+  
+  # Remove most chart elements, expect for titles for the
+  # cancer types
+  theme(legend.position = "none",
+        line = element_blank(),
+        rect = element_blank(),
+        axis.text = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        strip.text = element_text(size = 10))
+```

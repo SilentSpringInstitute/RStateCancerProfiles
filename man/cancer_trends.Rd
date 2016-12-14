@@ -4,7 +4,12 @@
 \alias{cancer_trends}
 \title{cancer_trends}
 \usage{
-cancer_trends()
+cancer_trends(trend = "incidence", state = NULL)
+}
+\arguments{
+\item{trend}{"incidence" or "mortality"}
+
+\item{state}{state abbreviation to download data for, e.g. "MA"}
 }
 \description{
 trends in cancer mortality over time

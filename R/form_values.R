@@ -2,7 +2,7 @@ cancer_value <- function(cancer_str) {
   cancer_types <- list(
     "all" = "001",
     "bladder" = "071",
-    "brain & ONS" = "076",
+    "brain & ons" = "076",
     "breast (female)" = "055",
     "breast (female in situ)" = "400",
     "cervix" = "057",
@@ -25,7 +25,9 @@ cancer_value <- function(cancer_str) {
     "uterus" = "058"
   )
 
-  stopifnot(cancer_str %in% names(cancer_types))
+  if(!(cancer_str %in% names(cancer_types))) {
+    stop(paste(cancer_str, " is not a recognized cancer type"))
+  }
 
   return(cancer_types[[cancer_str]])
 }

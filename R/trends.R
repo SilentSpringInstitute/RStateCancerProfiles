@@ -27,6 +27,8 @@ trend_form_values <- function(by, state, cancer, race, sex, age) {
 #' @title cancer_trends
 #' @description trends in cancer mortality over time
 #'
+#' @param trend "incidence" or "mortality"
+#' @param state state abbreviation to download data for, e.g. "MA"
 #' @export
 cancer_trends <- function(trend = "incidence", state = NULL) {
   if(trend == "incidence" && !is.null(state)) {

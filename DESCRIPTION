@@ -1,15 +1,21 @@
 Package: RStateCancerProfiles
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Download data from the U.S. State Cancer Profiles database
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Authors@R: c(
+  person("Herb", "Susmann", email="susmann@silentspring.org", role=c("cre","aut")),
+  person("Silent Spring Institute", role="cph")
+  )
+URL: http://github.com/silentspringinstitute/RStateCancerProfiles
+BugReports: http://github.com/silentspringinstitute/RStateCancerProfiles/issues
+Description: Tools for downloading cancer incidence, mortality, and trend data from the U.S. State Cancer Profiles.
+License: Apache License 2.0 | file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 5.0.1
+Depends:
+  R (>= 3.0)
 Imports: readr,
-    dplyr
+    dplyr,
+    stringr
 Suggests: testthat

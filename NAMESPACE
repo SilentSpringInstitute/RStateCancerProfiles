@@ -2,3 +2,4 @@
 
 export(cancer_statistics)
 export(cancer_trends)
+importFrom(utils,download.file)
