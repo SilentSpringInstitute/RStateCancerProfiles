@@ -17,5 +17,10 @@ Depends:
   R (>= 3.0)
 Imports: readr,
     dplyr,
-    stringr
-Suggests: testthat
+    stringr,
+    maps
+Suggests: 
+  testthat,
+  knitr,
+  rmarkdown
+VignetteBuilder: knitr
