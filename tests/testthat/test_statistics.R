@@ -1,5 +1,6 @@
 test_that("downloading state cancer profiles statistics works", {
   test_that("downloading data doesn't throw a warning", {
+    cancer_statistics(statistic = "incidence")
     expect_silent(cancer_statistics(statistic = "incidence"))
     expect_silent(cancer_statistics(statistic = "mortality"))
   })
