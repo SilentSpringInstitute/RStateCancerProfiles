@@ -3,16 +3,16 @@ query_args <- function(l) {
   paste(names(l), l, sep="=", collapse = "&")
 }
 
-
+#' @import maps
 statistic_form_values <- function(by, state, cancer, race, sex, age) {
   ret <- list()
   if(by == "county" && (is.null(state) || state == "all")) {
     ret$state = "99"
   }
   else if(by == "county" && !is.null(state)) {
-    stopifnot(state %in% maps::state.fips$abb)
+    stopifnot(state %in% tolower(maps::state.fips$abb))
 
-    ret$state = maps::state.fips$fips[maps::state.fips$abb == state][1]
+    ret$state = maps::state.fips$fips[tolower(maps::state.fips$abb) == state][1]
   }
   else if(by == "state") {
     ret$state = "00"

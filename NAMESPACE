@@ -2,5 +2,5 @@
 
 export(cancer_statistics)
 export(cancer_trends)
-importFrom(maps,state.fips)
+import(maps)
 importFrom(utils,download.file)
