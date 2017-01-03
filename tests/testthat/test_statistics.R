@@ -27,7 +27,7 @@ test_that("downloading state cancer profiles statistics works", {
     expect_equal(nrow(dat), 3141)
 
     expect_equal(dat$county[1], "US (SEER+NPCR)(1,10)")
-    expect_equal(dat$fips[1], "00000")
+    expect_equal(dat$fips[1], 0)
     expect_equal(dat$incidence_rate[1], 448.4)
   })
 
@@ -55,7 +55,7 @@ test_that("downloading state cancer profiles statistics works", {
     expect_equal(nrow(dat), 3141)
 
     expect_equal(dat$county[1], "United States")
-    expect_equal(dat$fips[1], "00000")
+    expect_equal(dat$fips[1], 0)
     expect_equal(dat$mortality_rate[1], 168.5)
   })
 
